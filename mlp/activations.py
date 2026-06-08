@@ -1,58 +1,57 @@
 import numpy as np
 
-def relu(z):
+def relu(z: np.ndarray) -> np.ndarray:
     """
-    Calcula a ativação ReLU (Rectified Linear Unit) de forma elemento a elemento.
-
-    Fórmula:
-        f(z) = max(0, z)
-
-    Parâmetros:
-        z (np.ndarray): Tensor de entrada (pode ser vetor ou matriz).
-
-    Retorna:
-        np.ndarray: Ativações resultantes com o mesmo formato de z.
+    ReLU(z) = max(0, z)
     """
     return np.maximum(0, z)
 
-def relu_derivative(z):
+def relu_backward(z: np.ndarray) -> np.ndarray:
     """
-    Calcula a derivada da função de ativação ReLU.
-
-    Fórmula:
-        f'(z) = 1 se z > 0
-        f'(z) = 0 se z <= 0
-
-    Parâmetros:
-        z (np.ndarray): Entrada (pré-ativação) que foi fornecida à função ReLU.
-
-    Retorna:
-        np.ndarray: Gradientes elemento a elemento com o mesmo formato de z.
+    Derivada da ReLU em relação a z.
+    Retorna 1.0 onde z > 0 e 0.0 caso contrário.
     """
-    return np.where(z > 0, 1.0, 0.0)
+    return (z > 0).astype(float)
 
-def softmax(z):
+def softmax(z: np.ndarray) -> np.ndarray:
     """
-    Calcula a função de ativação Softmax para um vetor ou matriz de logits.
-    Implementada de forma numericamente estável para evitar overflow.
-
-    Fórmula estável:
-        f(z_i) = exp(z_i - max(z)) / soma_j(exp(z_j - max(z)))
-
-    Parâmetros:
-        z (np.ndarray): Logits de entrada. 
-                        Pode ser 1D (num_classes,) ou 2D (batch_size, num_classes).
-
-    Retorna:
-        np.ndarray: Distribuição de probabilidade resultante com o mesmo formato de z.
+    Softmax numericamente estável.
+    Assume que cada coluna de z representa uma amostra e cada linha representa uma classe.
     """
-    if z.ndim == 1:
-        # Estabilidade numérica: subtrai o máximo de z
-        z_shifted = z - np.max(z)
-        exps = np.exp(z_shifted)
-        return exps / np.sum(exps)
-    else:
-        # Para matrizes (lote de exemplos): subtrai o máximo ao longo do eixo das classes (axis=1)
-        z_shifted = z - np.max(z, axis=1, keepdims=True)
-        exps = np.exp(z_shifted)
-        return exps / np.sum(exps, axis=1, keepdims=True)
+    # Subtrai o máximo de cada coluna para estabilidade numérica (axis=0)
+    z_shifted = z - np.max(z, axis=0, keepdims=True)
+    exp_z = np.exp(z_shifted)
+    return exp_z / np.sum(exp_z, axis=0, keepdims=True)
+
+def sigmoid(z: np.ndarray) -> np.ndarray:
+    """
+    Função Sigmoid estável.
+    """
+    z_clipped = np.clip(z, -500, 500)
+    return 1.0 / (1.0 + np.exp(-z_clipped))
+
+def sigmoid_backward(z: np.ndarray) -> np.ndarray:
+    """
+    Derivada da Sigmoid.
+    """
+    s = sigmoid(z)
+    return s * (1.0 - s)
+
+def tanh(z: np.ndarray) -> np.ndarray:
+    """
+    Função Tangente Hiperbólica.
+    """
+    return np.tanh(z)
+
+def tanh_backward(z: np.ndarray) -> np.ndarray:
+    """
+    Derivada da Tangente Hiperbólica.
+    """
+    return 1.0 - np.tanh(z) ** 2
+
+# Registro de ativações para uso dinâmico na classe MLP
+ACTIVATIONS = {
+    "relu":    (relu,    relu_backward),
+    "sigmoid": (sigmoid, sigmoid_backward),
+    "tanh":    (tanh,    tanh_backward),
+}
