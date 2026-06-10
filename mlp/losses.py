@@ -25,3 +25,19 @@ def softmax_crossentropy_backward(A_out: np.ndarray, Y: np.ndarray) -> np.ndarra
     """
     m = A_out.shape[1]
     return (A_out - Y) / m
+
+
+def _test_losses() -> None:
+    y = np.array([0, 1, 2])
+    Y = one_hot(y, n_classes=3)
+    A_out = np.array([[0.7, 0.1, 0.2], [0.2, 0.7, 0.1], [0.1, 0.2, 0.7]]).T
+
+    print("one_hot:")
+    print(Y)
+    print("cross_entropy_loss:", cross_entropy_loss(A_out, Y))
+    print("softmax_crossentropy_backward:")
+    print(softmax_crossentropy_backward(A_out, Y))
+
+
+if __name__ == "__main__":
+    _test_losses()

@@ -55,3 +55,21 @@ ACTIVATIONS = {
     "sigmoid": (sigmoid, sigmoid_backward),
     "tanh":    (tanh,    tanh_backward),
 }
+
+
+def _test_activations() -> None:
+    z = np.array([[-1.0, 0.0, 1.0], [2.0, -2.0, 0.0]])
+    print("z:")
+    print(z)
+    print("relu(z):")
+    print(relu(z))
+    print("sigmoid(z):")
+    print(sigmoid(z))
+    print("tanh(z):")
+    print(tanh(z))
+    print("softmax(z):")
+    print(softmax(z))
+
+
+if __name__ == "__main__":
+    _test_activations()
