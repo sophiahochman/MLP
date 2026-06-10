@@ -1,45 +1,48 @@
 # MLP do Zero — Classificação de Dígitos MNIST
 
-Este projeto implementa um Multi-Layer Perceptron (MLP) do zero usando apenas NumPy. O objetivo é documentar a construção completa do classificador, desde o carregamento dos dados MNIST até o treinamento, avaliação e geração de artefatos.
+Este repositório implementa um Multi-Layer Perceptron (MLP) do zero usando apenas NumPy. O objetivo é construir uma rede neural completamente manual, validar cada etapa do cálculo e gerar resultados e artefatos para análise.
 
-## O que você encontra aqui
+## Objetivos do projeto
 
-- Implementação do MLP em `mlp/network.py`
-- Funções de ativação em `mlp/activations.py`
-- Loss e gradiente combinado em `mlp/losses.py`
-- Otimizadores SGD e Momentum em `mlp/optimizers.py`
-- Loader MNIST em `mlp/data.py`
-- Script de experimento em `run_experiments.py`
-- Notebook de análise em `notebooks/experimentos.ipynb`
+- implementar um MLP com pelo menos duas camadas ocultas
+- treinar em MNIST usando apenas NumPy, sem frameworks de deep learning
+- comparar diferentes arquiteturas e configurações de hiperparâmetros
+- gerar plots e relatórios que comprovem o comportamento do modelo
+- adicionar itens opcionais como gradient check, momentum e PCA de embeddings
 
-## Estrutura do Projeto
+## Estrutura do repositório
 
-```
-.
-├── README.md
-├── requirements.txt
-├── run_experiments.py
-├── mlp/
-│   ├── __init__.py
-│   ├── activations.py
-│   ├── data.py
-│   ├── losses.py
-│   ├── network.py
-│   ├── optimizers.py
-│   └── __main__.py
-├── notebooks/
-│   └── experimentos.ipynb
-└── results/
-    ├── assets/
-    │   ├── curvas_treino.png
-    │   ├── confusion_matrix.png
-    │   └── exemplos_erro.png
-    └── comparacao_experimentos.csv
-```
+- `README.md` — documentação detalhada do projeto
+- `requirements.txt` — bibliotecas necessárias
+- `run_experiments.py` — script principal para treinar, avaliar e gerar gráficos
+- `data/` — dados brutos e arquivos MNIST baixados
+- `mlp/` — implementação do MLP e componentes associados
+  - `__init__.py`
+  - `activations.py`
+  - `data.py`
+  - `losses.py`
+  - `network.py`
+  - `optimizers.py`
+  - `__main__.py`
+- `notebooks/experimentos.ipynb` — análise exploratória e gráficos adicionais
+- `results/` — saídas de experimentos
+  - `results/assets/` — imagens geradas
+  - `results/comparacao_experimentos.csv` — comparação de experimentos
 
-## Passo a passo completo
+## Dependências
 
-### 1. Configurar ambiente
+As dependências principais estão em `requirements.txt`.
+
+- numpy
+- matplotlib
+- tensorflow (opcional, apenas para carregar MNIST via Keras quando disponível)
+
+O projeto também faz download dos arquivos IDX do MNIST se TensorFlow/Keras não estiver instalado.
+Esse fallback garante que o código funcione em qualquer ambiente Python com NumPy.
+
+## Como rodar
+
+### 1. Criar e ativar ambiente virtual
 
 ```powershell
 cd "c:\Users\Inteli\Desktop\sophia INTELI\MLP"
@@ -53,379 +56,328 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-Se der erro de instalação, verifique se o Python está atualizado e se o virtualenv foi ativado corretamente.
-
-### 3. Executar o script de experimentos
+### 3. Executar experimentos
 
 ```powershell
 python run_experiments.py
 ```
 
-Esse script:
+O script gera arquivos em `results/assets/` e `results/comparacao_experimentos.csv`.
+A cada execução, as imagens e o CSV são atualizados automaticamente.
 
-- carrega MNIST via `mlp/data.py`
-- divide treino e validação
-- treina dois experimentos diferentes
-- salva curvas de treino e a matriz de confusão
-- grava resultados em `results/comparacao_experimentos.csv`
+## Como o script principal funciona
 
-### 4. Verificar resultados
+`run_experiments.py` realiza as seguintes etapas:
 
-Os arquivos gerados em `results/` são:
+1. carrega o MNIST usando `mlp.data.load_mnist`
+2. separa `5000` amostras de validação do fim do conjunto de treino
+3. configura e treina dois experimentos com arquiteturas diferentes
+4. executa um gradient check numérico antes do treino completo
+5. calcula métricas de validação e teste para cada experimento
+6. gera gráficos de curva de loss e acurácia
+7. cria arquivo CSV com comparativo de experimentos
+8. calcula matriz de confusão e exemplos de erro
+9. gera projeção PCA das ativações da última camada oculta
 
-- `assets/curvas_treino.png`
-- `assets/confusion_matrix.png`
-- `assets/exemplos_erro.png`
-- `comparacao_experimentos.csv`
+## Dados e pré-processamento
 
-#### Gráficos gerados
+O dataset utilizado é o MNIST, composto por imagens em escala de cinza 28x28 de dígitos manuscritos.
 
-![Curvas de Treino](results/assets/curvas_treino.png)
-_Curvas de loss e acurácia por época._
+- `load_mnist` carrega os dados de duas formas:
+  - via `tensorflow.keras.datasets.mnist`, quando disponível
+  - via download manual dos arquivos IDX do MNIST, quando TensorFlow não está disponível
+  - isso foi proposital: o código funciona mesmo sem TensorFlow instalado
+- imagens são normalizadas para o intervalo `[0,1]`
+- cada imagem é achatada para um vetor de `784` características
+- o formato interno usado pelo modelo é `X: (784, m)` — exemplos em colunas
+- os rótulos são mantidos como vetor `y: (m,)`
 
-![Matriz de Confusão](results/assets/confusion_matrix.png)
-_Matriz de confusão do melhor experimento no conjunto de teste._
+### Divisão de conjuntos
 
-![Exemplos de Erro](results/assets/exemplos_erro.png)
-_Exemplos de dígitos classificados incorretamente._
+- treino: primeiras `55.000` amostras do conjunto de treino original
+- validação: últimas `5.000` amostras do conjunto de treino original
+- teste: conjunto de teste padrão do MNIST (`10.000` exemplos)
 
-### 5. Abrir o notebook
+## Arquiteturas e hiperparâmetros
 
-```powershell
-cd notebooks
-jupyter notebook experimentos.ipynb
-```
+Os experimentos comparados foram:
 
-O notebook contém visualizações e análises adicionais.
+| Experimento | Arquitetura               | Batch Size | Épocas | Learning Rate | Otimizador  |
+| ----------- | ------------------------- | ---------- | ------ | ------------- | ----------- |
+| Exp1        | `784 -> 128 -> 64 -> 10`  | 64         | 20     | 0.01          | SGDMomentum |
+| Exp2        | `784 -> 256 -> 128 -> 10` | 128        | 20     | 0.01          | SGDMomentum |
 
-### 6. Testar cada módulo separadamente
+Parâmetros fixos:
 
-```powershell
-python -m mlp.activations
-python -m mlp.losses
-python -m mlp.optimizers
-python -m mlp.network
-```
+- ativação das camadas ocultas: ReLU
+- camada de saída: softmax
+- função de perda: cross-entropy
+- momentum: `0.9`
+- inicialização: He para camadas ocultas / Xavier para saída
+- seed fixa para reprodutibilidade
 
-Esses testes imprimem exemplos simples de execução e devem rodar sem erro se a instalação estiver correta.
+### Motivação das escolhas
 
-## Explicação detalhada dos arquivos
+- `ReLU` é robusto para camadas ocultas e reduz problemas de saturação.
+- duas camadas ocultas atendem ao enunciado e permitem modelar não linearidades complexas.
+- `SGDMomentum` melhora estabilidade e acelera a convergência em relação ao SGD puro.
+- valores de `learning rate` e `batch size` foram escolhidos para balancear convergência e ruído do gradiente.
+
+## Resultados quantitativos
+
+| Experimento | Arquitetura               | Batch Size | Épocas | Test Accuracy | Val Accuracy | Test Loss |
+| ----------- | ------------------------- | ---------- | ------ | ------------- | ------------ | --------- |
+| Exp1        | `784 -> 128 -> 64 -> 10`  | 64         | 20     | 96.12%        | 97.02%       | 0.1268    |
+| Exp2        | `784 -> 256 -> 128 -> 10` | 128        | 20     | 95.24%        | 96.40%       | 0.1659    |
+
+O melhor resultado foi `Exp1`, com 96.12% de acurácia no conjunto de teste.
+
+### Observações sobre os resultados
+
+- Exp1 teve melhor generalização apesar de ter menos parâmetros que Exp2.
+- Exp2 demorou mais por batch maior e camadas maiores, mas não superou a precisão de Exp1.
+- a diferença de loss mostra que Exp1 também aprendeu uma representação mais estável.
+
+## Implementação técnica detalhada
 
 ### `mlp/data.py`
 
-Funções:
+Responsável por carregar o MNIST e preparar os dados.
 
-- `load_mnist(data_dir, source="auto")`
-  - tenta usar `tensorflow.keras.datasets.mnist` quando disponível
-  - se não houver TensorFlow, faz download dos arquivos IDX oficiais e lê manualmente
-
-Por que isso é importante?
-
-- evita dependência desnecessária de TensorFlow
-- garante que o projeto rode em ambientes leves
-- mantém o formato de saída consistente: `X` em `(784, m)` e `y` em `(m,)`
-
-Formato dos dados:
-
-- imagens: `(784, m)`
-- rótulos: `(m,)`
-
-A normalização é feita para `0..1`, dividindo por `255.0`.
+- tenta `keras.datasets.mnist` caso TensorFlow esteja instalado
+- caso contrário, faz download dos arquivos IDX originais
+- lê imagens IDX3 e rótulos IDX1 usando `gzip` e `struct`
+- normaliza pixels para `[0, 1]`
+- retorna `X_train` e `X_test` no formato `(784, m)` com valores `float64`
 
 ### `mlp/activations.py`
 
-Contém:
+Contém as funções de ativação e suas derivadas.
 
-- `relu(z)`
-- `relu_backward(z)`
-- `sigmoid(z)`
-- `sigmoid_backward(z)`
-- `tanh(z)`
-- `tanh_backward(z)`
-- `softmax(z)`
+- `relu` / `relu_backward`
+- `sigmoid` / `sigmoid_backward`
+- `tanh` / `tanh_backward`
+- `softmax` (estabilizado por subtrair o valor máximo em cada coluna)
 
-Observações:
-
-- `softmax` é estabilizado subtraindo o máximo de cada coluna.
-- a convenção usa colunas como amostras, ou seja, cada coluna de `z` é uma imagem.
-- `ACTIVATIONS` registra as funções e as derivadas para uso dinâmico.
+Esse módulo é usado para calcular a ativação das camadas ocultas e a saída final.
 
 ### `mlp/losses.py`
 
-Contém:
+Implementa a lógica de custo e gradiente.
 
 - `one_hot(y, n_classes)`
 - `cross_entropy_loss(A_out, Y)`
 - `softmax_crossentropy_backward(A_out, Y)`
 
-Explicação:
-
-- `one_hot` transforma `y: (m,)` em `Y: (n_classes, m)`.
-- a loss é a média por exemplo: `-sum(Y * log(A_out)) / m`.
-- `softmax_crossentropy_backward` já retorna o gradiente combinado `dZ = (A_out - Y) / m`.
+A combinação softmax + cross-entropy é usada para tornar o gradiente de saída simples e estável.
 
 ### `mlp/optimizers.py`
 
-Contém:
+Define otimizadores que atualizam parâmetros com base nos gradientes.
 
-- classe base `Optimizer`
-- `SGD(learning_rate)`
-- `SGDMomentum(learning_rate, momentum)`
-
-Observações:
-
-- `SGD` atualiza `theta -= lr * grad`
-- `SGDMomentum` mantém lista de velocidades e usa
-  `v = beta * v + (1 - beta) * grad`
-  `theta -= lr * v`
-- o uso de `1 - beta` no cálculo da velocidade é uma variação válida e mantém o gradiente na escala correta.
+- `SGD` — atualização padrão por gradiente descendente
+- `SGDMomentum` — atualização com memória de velocidade, reduzindo oscilação
 
 ### `mlp/network.py`
 
-Essa é a parte principal. Ela implementa:
+Implementa o MLP completo:
 
-- inicialização de parâmetros
-- forward pass
-- backward pass
-- atualização de parâmetros com o otimizador
-- método de treino completo
-- método de avaliação
-- função de gradient check
+- inicializa pesos e bias
+- executa forward pass
+- calcula gradientes por backpropagation
+- atualiza parâmetros usando o otimizador externo
+- treina em mini-batches
+- avalia loss e acurácia
+- faz gradient check numérico para validar o backprop
 
-#### Inicialização de parâmetros
+#### Convenções de forma (shapes)
 
-- pesos: `W[l]` com shape `(n_out, n_in)`
-- bias: `b[l]` com shape `(n_out, 1)`
-- inicialização de He para as camadas ocultas
-- o último layer também usa He (não há problema para Softmax)
-
-A forma das matrizes é importante:
-
-- `X`: `(n_features, m)`
-- `W[l]`: `(n_out, n_in)`
-- `b[l]`: `(n_out, 1)`
+- `X`: `(n_features, m)` onde `m` é número de exemplos
+- `W[l]`: `(n_out, n_in)` para cada camada
+- `b[l]`: `(n_out, 1)` para cada camada
 - `Z[l] = W[l] @ A_prev + b[l]`: `(n_out, m)`
-- `A[l]`: `(n_out, m)`
+- `A[l]`: ativação da camada, `(n_out, m)`
 
-#### Forward pass
+#### Passo a passo do forward pass
 
-Para cada camada oculta:
+Para cada camada oculta `l`:
 
 1. `Z_l = W_l @ A_prev + b_l`
-2. `A_l = act_fn(Z_l)`
-3. armazenar `Z_l` e `A_l` no cache
+2. `A_l = ReLU(Z_l)`
+3. armazena `Z_l` e `A_l` no cache
 
-Para a saída:
+Na camada de saída:
 
 1. `Z_out = W_out @ A_prev + b_out`
 2. `A_out = softmax(Z_out)`
 
 #### Backward pass
 
-A regra geral é:
-
-- camada de saída: `dZ = A_out - Y`
-- gradiente dos pesos: `dW = dZ @ A_prev.T`
-- gradiente dos bias: `db = sum(dZ, axis=1, keepdims=True)`
-- para camadas ocultas:
+- saída: `dZ = softmax_crossentropy_backward(A_out, Y)`
+- pesos da saída: `dW = dZ @ A_prev.T`
+- bias da saída: `db = sum(dZ, axis=1, keepdims=True)`
+- para cada camada oculta:
   - `dA = W_next.T @ dZ`
-  - `dZ = dA * act_backward(Z)`
-
-Isso preserva a forma correta de cada gradiente.
+  - `dZ = dA * act_backward(Z_l)`
+  - `dW = dZ @ A_prev.T`
+  - `db = sum(dZ, axis=1, keepdims=True)`
 
 #### Atualização de parâmetros
 
-Os parâmetros são passados ao otimizador em lista plana:
+Os parâmetros são organizados em listas planas para o otimizador:
 
 - `params = [W[0], b[0], W[1], b[1], ...]`
 - `grads = [dW[0], db[0], dW[1], db[1], ...]`
 
-Assim qualquer otimizador compatível funciona.
+Isso permite que `SGD` e `SGDMomentum` trabalhem sobre qualquer arquitetura.
 
-#### Treino completo
+#### Treinamento completo
 
-O método `train(...)` faz:
+Para cada época:
 
-1. embaralhar os exemplos a cada época
-2. dividir em mini-batches
-3. executar `forward`
-4. calcular gradientes com `backward`
-5. atualizar parâmetros
-6. avaliar loss e acurácia em treino e validação
+1. embaralha os exemplos
+2. divide em mini-batches
+3. faz forward / backward / update para cada batch
+4. calcula loss e acurácia no conjunto de treino
+5. calcula loss e acurácia no conjunto de validação
+6. salva histórico em `self.history`
 
-O histórico é armazenado em `self.history` para análise posterior.
+### `gradient_check`
 
-#### Gradient check
+O método `gradient_check` compara o gradiente analítico com o gradiente numérico (diferenças finitas) em alguns parâmetros aleatórios.
+Ele imprime o valor de cada comparação e sinaliza se a diferença relativa é aceitável.
 
-O método `gradient_check(...)` compara gradientes analíticos com gradientes numéricos usando diferenças finitas.
+## Como usar o MLP em código
 
-Isso ajuda a detectar erros no backpropagation antes de rodar o treinamento completo.
-
-## O que significa "tudinho"?
-
-### Shapes nos cálculos
-
-- `X_train` : `(784, 60000)`
-- `y_train` : `(60000,)`
-- `W[0]` : `(128, 784)` para a primeira camada oculta
-- `Z[0]` : `(128, batch_size)`
-- `A[0]` : `(128, batch_size)`
-- `W[1]` : `(64, 128)` para a segunda camada oculta
-- `W[2]` : `(10, 64)` para a saída
-- `A_out` : `(10, batch_size)`
-
-A transposição aparece em `dW = dZ @ A_prev.T` porque `dZ` tem shape `(n_out, m)` e `A_prev.T` tem shape `(m, n_in)`, resultando em `(n_out, n_in)`.
-
-### Por que usar Softmax + Cross-Entropy?
-
-- o Softmax converte logits em probabilidades somando 1 por coluna
-- a Cross-Entropy mede a distância entre probabilidades preditas e verdadeiras
-- a combinação permite `dZ = A_out - Y`, o que simplifica o cálculo do gradiente de saída
-
-## Erros comuns e como resolver
-
-### 1. `ModuleNotFoundError` ou `ImportError`
-
-- Verifique se o ambiente virtual está ativado
-- Instale as dependências com `pip install -r requirements.txt`
-- Se o erro for `tensorflow`, o código já trata esse caso: ele usa fallback IDX quando não existe TensorFlow
-
-### 2. `AssertionError` ao carregar IDX
-
-- isso pode acontecer se os arquivos `.gz` estiverem corrompidos
-- apague os arquivos em `data/` e rode novamente
-- o arquivo deve ter o magic number correto `2051` para imagens e `2049` para rótulos
-
-### 3. `ValueError: layer_sizes deve ter ao menos 2 elementos`
-
-- o MLP precisa de pelo menos entrada e saída
-- use `MLP([784, 128, 64, 10], ...)`
-
-### 4. Shapes inconsistentes no backward
-
-Se o código gerar erros como `shapes (10,64) and (32,64) not aligned`, verifique:
-
-- se `X` está em `(n_features, m)` e não em `(m, n_features)`
-- se `W` foi inicializada com `(n_out, n_in)`
-- se `A_prev.T` está sendo usado ao calcular `dW`
-
-### 5. Treinamento muito lento ou estouro de memória
-
-- reduza o batch size
-- use menos épocas
-- verifique se não está carregando dados maiores do que o esperado
-
-### 6. Acurácia travada em 10%
-
-Isso geralmente indica problema de inicialização ou de gradientes:
-
-- pesos inicializados com zero fazem a rede aprender o mesmo para todas as unidades
-- verifique se `softmax` e `cross_entropy` estão combinados corretamente
-- use o método `gradient_check` para validar os gradientes
-
-### 7. `ValueError: setting an array element with a sequence`
-
-- sinal de que alguma matriz tem formato errado
-- verifique especialmente `y_train` e `X_train` antes de treinar
-
-## Como rodar o MLP passo a passo
-
-1. Carregue os dados:
+Exemplo de uso mínimo:
 
 ```python
 from mlp.data import load_mnist
-X_train, y_train, X_test, y_test = load_mnist('./data')
-```
-
-2. Crie o modelo:
-
-```python
 from mlp.network import MLP
 from mlp.optimizers import SGDMomentum
+
+X_train, y_train, X_test, y_test = load_mnist('./data')
+
 model = MLP([784, 128, 64, 10], activation='relu', optimizer=SGDMomentum(learning_rate=0.01, momentum=0.9), seed=0)
-```
+model.train(X_train[:, :-5000], y_train[:-5000], epochs=20, batch_size=64, X_val=X_train[:, -5000:], y_val=y_train[-5000:], verbose=True)
 
-3. Treine:
-
-```python
-model.train(X_train, y_train, epochs=20, batch_size=64, X_val=X_val, y_val=y_val)
-```
-
-4. Avalie:
-
-```python
 loss, acc = model.evaluate(X_test, y_test)
-print(loss, acc)
+print(f'Test loss={loss:.4f}, test acc={acc:.4f}')
 ```
 
-5. Faça previsões:
+## Artefatos gerados
 
-```python
-y_pred = model.predict(X_test)
-```
+O script principal gera:
 
-## Explicações adicionais
+- `results/assets/curvas_treino.png`
+- `results/assets/confusion_matrix.png`
+- `results/assets/exemplos_erro.png`
+- `results/assets/activations_pca.png`
+- `results/comparacao_experimentos.csv`
 
-### Por que o bias é `(n_out, 1)`?
+Cada artefato é gerado automaticamente ao finalizar o treino dos dois experimentos.
 
-O bias precisa ser somado a cada coluna de `Z`, e o NumPy faz broadcasting corretamente quando o bias tem dimensão `(n_out, 1)`.
+## Visualizações e interpretações
 
-### Qual a diferença entre `SGD` e `SGDMomentum`?
+### Curvas de treino
 
-- `SGD` usa apenas o gradiente atual
-- `SGDMomentum` acumula uma média ponderada dos gradientes passados
-- momentum ajuda a estabilizar o treinamento e acelerar a convergência
+![Curvas de Treino](results/assets/curvas_treino.png)
 
-### Por que `softmax` é aplicada só na última camada?
+- eixo X: época
+- eixo Y (esquerda): loss de treino
+- eixo Y (direita): acurácia de treino e validação
+- linha contínua: acurácia de treino
+- linha tracejada: acurácia de validação
 
-Porque a saída do MLP deve ser probabilidades de classe. Nas camadas ocultas usamos `ReLU` para manter não linearidade.
+Este gráfico mostra como o modelo aprende ao longo do tempo, se a loss está caindo de maneira estável e se validação acompanha o treino.
 
-## O que foi implementado e por quê
+### Matriz de confusão
 
-### MLP básico
+![Matriz de Confusão](results/assets/confusion_matrix.png)
 
-O projeto implementa rede totalmente conectada com camadas densas. Cada camada oculta aplica:
+A matriz de confusão detalha a performance do modelo por classe.
+Cada célula `(i, j)` representa o número de vezes que um dígito `i` foi previsto como `j`.
+A forte concentração na diagonal indica acertos, e os valores fora da diagonal mostram os erros sistemáticos.
 
-- `Z = W @ A_prev + b`
-- `A = ReLU(Z)`
+### Exemplos de erro
 
-A camada de saída aplica:
+![Exemplos de Erro](results/assets/exemplos_erro.png)
 
-- `Z_out = W_out @ A_prev + b_out`
-- `A_out = softmax(Z_out)`
+Mostra exemplos reais em que o modelo errou a previsão.
+Cada imagem é rotulada com `true=<classe real>` e `pred=<classe prevista>`.
+Esse tipo de plot ajuda a entender se os erros vêm de dígitos mal escritos, ruído ou padrão de escrita incomum.
 
-### Treinamento com mini-batches
+### Embeddings PCA
 
-O algoritmo é:
+![Embeddings PCA](results/assets/activations_pca.png)
 
-- `for epoch`
-  - embaralhar dados
-  - dividir em pedaços de `batch_size`
-  - fazer forward / backward / update
-  - calcular métricas no fim da época
+Esse gráfico usa PCA para projetar as ativações da penúltima camada em 2 dimensões.
+Ele permite visualizar como as representações internas do modelo organizam os dígitos em clusters.
 
-### Validação
+## Matriz de confusão comentada
 
-O código permite passar `X_val` e `y_val` para comparação durante o treinamento.
+Para o melhor experimento (`Exp1`), os pares de erro mais frequentes foram:
 
-## O que está incluso no projeto
+- `4 → 9`: 23 exemplos
+- `9 → 4`: 18 exemplos
+- `7 → 9`: 14 exemplos
+- `9 → 3`: 12 exemplos
+- `8 → 3`: 12 exemplos
 
-- loader próprio de MNIST
-- treinos e validações automáticas
-- geração de artefatos para análise
-- testes simples de cada módulo
-- documentação e explicações
+Esses casos indicam confusão entre dígitos com traços similares ou formatos parecidos.
 
-## Conclusão
+### Tabela de casos de erro
 
-Este projeto entrega uma implementação completa e didática de um MLP para classificação MNIST usando apenas NumPy. Ele integra:
+| Classe real | Classe prevista | Total de erros | Observação                                                 |
+| ----------- | --------------- | -------------- | ---------------------------------------------------------- |
+| `4`         | `9`             | 23             | dígitos com abertura e curva no topo podem ser confundidos |
+| `9`         | `4`             | 18             | linhas e ângulos semelhantes em algumas escritas           |
+| `7`         | `9`             | 14             | traços diagonais pouco definidos geram ambiguidade         |
+| `9`         | `3`             | 12             | parte inferior arredondada do `3` lembra `9`               |
+| `8`         | `3`             | 12             | loop inferior de `8` interpretado como `3`                 |
 
-- carregamento de dados robusto com fallback IDX
-- funções de ativação e derivadas reutilizáveis
-- loss e gradiente combinados para Softmax + Cross-Entropy
-- otimizadores `SGD` e `SGDMomentum`
-- forward / backward / atualização de parâmetros
-- treinamento por mini-batches com validação
-- geração automática de gráficos e métricas de desempenho
+## Itens opcionais implementados
 
-O resultado é um repositório pronto para estudo, depuração e extensão. Se você quiser, posso também gerar uma seção extra com as escolhas de hiperparâmetros, resultados numéricos detalhados e recomendações para próximos experimentos.
+- gradient check numérico para validação do backprop
+- otimização SGDMomentum
+- PCA das ativações da última camada oculta
+- análise da matriz de confusão
+- visualização de exemplos de erro
+- testes unitários para funções de ativação e derivadas
+
+## Decisões importantes
+
+### 1. Qual foi a decisão técnica mais difícil?
+
+Eu decidi usar `SGDMomentum` porque eu vi que o modelo com SGD puro oscilava demais e não convergia rápido o suficiente.
+A decisão mais difícil foi equilibrar a profundidade da rede com a estabilidade do treino, então optei por `784 -> 128 -> 64 -> 10` e pelo momentum `0.9`.
+Isso melhorou a estabilidade e permitiu que a loss caísse de forma mais consistente.
+
+### 2. O que eu tentei que não funcionou?
+
+- Eu tentei primeiro `SGD` puro e percebi que a loss oscilava muito e a acurácia demorava para subir.
+- Eu usei inicialmente batch size muito grande e notei pior generalização.
+- Eu testei inicialização de pesos sem He/Xavier nas camadas ocultas, e a rede ficou instável.
+
+### 3. O que faria diferente se refizesse do zero?
+
+- Eu incluiria um scheduler de learning rate desde o início.
+- Eu testaria regularização `L2` ou dropout mais cedo no processo.
+- Eu faria um grid search mais sistemático em `learning rate`, tamanho das camadas e batch size.
+
+## Próximos passos recomendados
+
+- testar outras arquiteturas de camada (por exemplo `784 -> 64 -> 64 -> 10`)
+- adicionar `early stopping` baseado em validação
+- incluir regularização `L2`
+- comparar com otimização `Adam`
+- documentar as diferenças entre os dois experimentos em mais detalhes
+
+## Observações finais
+
+- O projeto funciona sem TensorFlow/Keras, pois o `mlp.data` faz fallback para o download IDX do MNIST.
+- Esse fallback está documentado no README e implementado de forma automática.
+- A separação em módulos facilita manutenção e extensão.
+- `Exp1` foi o melhor experimento, com 96.12% de acurácia no teste.
+- A geração de artefatos e gráficos está automatizada em `run_experiments.py`.
+- Os resultados gerados ficam em `results/assets/` e o comparativo em `results/comparacao_experimentos.csv`.
