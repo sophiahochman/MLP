@@ -365,13 +365,6 @@ Isso melhorou a estabilidade e permitiu que a loss caísse de forma mais consist
 - Eu testaria regularização `L2` ou dropout mais cedo no processo.
 - Eu faria um grid search mais sistemático em `learning rate`, tamanho das camadas e batch size.
 
-## Próximos passos recomendados
-
-- testar outras arquiteturas de camada (por exemplo `784 -> 64 -> 64 -> 10`)
-- adicionar `early stopping` baseado em validação
-- incluir regularização `L2`
-- comparar com otimização `Adam`
-- documentar as diferenças entre os dois experimentos em mais detalhes
 
 ## Observações finais
 
