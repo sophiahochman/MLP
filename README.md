@@ -418,6 +418,14 @@ O código permite passar `X_val` e `y_val` para comparação durante o treinamen
 
 ## Conclusão
 
-Este projeto não é apenas o código: é também o passo a passo do que acontece em cada etapa.
+Este projeto entrega uma implementação completa e didática de um MLP para classificação MNIST usando apenas NumPy. Ele integra:
 
-Se quiser, posso também preparar um documento separado com exemplos de execução e uma seção específica de “passo a passo para apresentação” ou “passos de debug detalhados”.
+- carregamento de dados robusto com fallback IDX
+- funções de ativação e derivadas reutilizáveis
+- loss e gradiente combinados para Softmax + Cross-Entropy
+- otimizadores `SGD` e `SGDMomentum`
+- forward / backward / atualização de parâmetros
+- treinamento por mini-batches com validação
+- geração automática de gráficos e métricas de desempenho
+
+O resultado é um repositório pronto para estudo, depuração e extensão. Se você quiser, posso também gerar uma seção extra com as escolhas de hiperparâmetros, resultados numéricos detalhados e recomendações para próximos experimentos.
